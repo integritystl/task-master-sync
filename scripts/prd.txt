@@ -1,0 +1,287 @@
+<context>
+# Overview
+This product aims to bridge the gap between AI-driven task management (TaskMaster AI) and collaborative project tracking on Monday.com. Developers use TaskMaster AI to generate and manage tasks locally. However, sharing visibility of these tasks with a broader team, who primarily use Monday.com, is challenging. This product provides a streamlined, command-line driven synchronization mechanism, allowing developers to push their local TaskMaster tasks to Monday.com and pull updates back, ensuring everyone has up-to-date information without requiring a continuous, real-time sync service. It reduces manual effort and improves transparency for project stakeholders.
+
+---
+
+# Core Features
+### 1. Command-Line Driven Sync (Push/Pull)
+* **What it does:** Provides distinct CLI commands (`taskmaster-sync push`, `taskmaster-sync pull`) for developers to manually initiate data synchronization.
+* **Why it's important:** Offers flexibility and control over when syncs occur, fitting into existing developer workflows (e.g., via Git hooks or npm scripts) without the overhead of a continuously running service.
+* **How it works at a high level:** When `push` is executed, the script reads `tasks.json`, identifies changes/new tasks, and sends them to Monday.com via its API. When `pull` is executed, it queries Monday.com for new or updated items and brings those changes back to `tasks.json`.
+
+### 2. Task-to-Item Data Mapping
+* **What it does:** Defines a clear, consistent mapping between TaskMaster task properties (like ID, Title, Status, Description) and Monday.com item columns (like Item Name, Task ID, Status, Info Box).
+* **Why it's important:** Ensures accurate and meaningful data transfer, making synchronized tasks comprehensible and usable on Monday.com.
+* **How it works at a high level:** The sync scripts contain predefined rules for how each TaskMaster field translates to a specific Monday.com column, including concatenating multiple TaskMaster fields (Description, Details, Test Strategy) into Monday.com's Info Box.
+
+### 3. Local Configuration
+* **What it does:** Allows developers to configure sync settings (e.g., Monday.com board/group IDs, API key) via a local `sync-config.json` file.
+* **Why it's important:** Provides project-specific and developer-specific control over sync behavior, and keeps sensitive API keys out of core TaskMaster AI configuration.
+* **How it works at a high level:** The sync commands read parameters from this JSON file at execution time to determine which Monday.com board to interact with and how to authenticate.
+
+---
+
+# User Experience
+### User Personas
+* **Developer (Primary User):**
+    * **Goals:** Efficiently manage tasks locally with TaskMaster AI; easily share task progress and details with the wider team on Monday.com; minimize manual data entry and context switching.
+    * **Needs:** Simple CLI commands; clear feedback on sync status; easy conflict resolution when bi-directional sync is enabled; secure handling of API keys.
+* **Project Manager/Team Lead (Secondary User):**
+    * **Goals:** Have up-to-date visibility into development progress on Monday.com; track task statuses and assignments; collaborate on tasks using Monday.com's features.
+    * **Needs:** Reliable and consistent data on Monday.com; clear indication of task origin (e.g., synced from TaskMaster AI).
+
+### Key User Flows
+1.  **Initial Setup:**
+    * Developer creates a `sync-config.json` file in their project directory, adding Monday.com board/group IDs and API key.
+    * Developer adds `sync-config.json` and `.taskmaster_sync_state.json` to `.gitignore`.
+2.  **Pushing Local Tasks to Monday.com:**
+    * Developer creates/updates tasks using TaskMaster AI, which are reflected in `tasks.json`.
+    * Developer runs `taskmaster-sync push` in the project's terminal.
+    * The command provides status updates (e.g., "Creating new item 'Task ABC'...", "Updating status for 'Task XYZ'...").
+    * If conflicts arise, the developer is prompted to resolve them via CLI.
+3.  **Pulling Monday.com Updates to Local Tasks:**
+    * Developer runs `taskmaster-sync pull` in the project's terminal.
+    * The command fetches updates from Monday.com and displays changes.
+    * If new items or conflicting updates are found, the developer is prompted for action (e.g., "New item 'Feature Request' found, create locally?", "Conflict for 'Bugfix 123', keep local or pull remote?").
+4.  **Integrating with Git Hooks/CI/CD (Future):**
+    * Developer configures a Git `pre-push` hook to automatically run `taskmaster-sync push`.
+    * Alternatively, a CI/CD pipeline step (e.g., GitHub Actions) runs `taskmaster-sync push` on successful merges to `main`.
+
+### UI/UX Considerations
+* **CLI Output:** Clear, concise, and informative command-line output. Use color-coding for success/error/warning messages where appropriate.
+* **Prompts:** Intuitive and easy-to-understand prompts for conflict resolution and new item discovery, with clear options for the user.
+* **Error Handling:** Provide actionable error messages, guiding the user on how to resolve issues (e.g., "API Key invalid", "Rate limit exceeded, retrying in X seconds").
+* **Documentation:** Comprehensive documentation for setup, commands, troubleshooting, and best practices (e.g., how to manage `sync-config.json` securely).
+</context>
+
+<PRD>
+# Technical Architecture
+
+## System Components
+1.  **TaskMaster AI (Local):**
+    * The existing TaskMaster AI application running on a developer's local machine.
+    * Persistent state is derived from local files within the project directory:
+        * `./tasks`: A directory containing individual files or a structured database representing tasks (Name, Description, Status, and potentially Priority, Complexity, Prerequisites).
+        * `./tasks.json`: A file containing a structured representation of tasks, which will be the primary source for pushing data to Monday.com.
+        * `./.taskmasterconfig`: A configuration file *specific to TaskMaster AI*.
+2.  **Local Sync Commands/Scripts (Per Developer Machine, Per Project):**
+    * A set of scripts or CLI commands executable on the developer's local machine, within the context of a specific project directory.
+    * **Responsibilities:**
+        * Reading and parsing the **new dedicated sync configuration file** (`./sync-config.json`) for settings.
+        * Reading task data from `./tasks.json` for push operations.
+        * Writing task data to `./tasks.json` for pull operations.
+        * Maintaining a local state/cache (e.g., `./.taskmaster_sync_state.json`) of Monday.com item IDs and their last known `updated_at` timestamps to detect changes efficiently.
+        * Communicating with the Monday.com API via HTTP requests (GraphQL).
+        * Implementing the synchronization logic (mapping fields, handling create/update operations).
+        * Handling conflict resolution by prompting the developer via the Command Line Interface (CLI) when a pull or push command is executed.
+        * Providing CLI commands for manual sync (pull/push), status checks, and new item discovery.
+3.  **Monday.com (Cloud Platform):**
+    * The SaaS project management platform.
+    * Accessed via its GraphQL API.
+    * Items (tickets) on a specified Board and Group(s) will be synchronized.
+
+---
+
+## Data Models
+1.  **TaskMaster AI Task (Source Data - Derived from Task File and `./tasks.json`):**
+    To facilitate synchronization, TaskMaster AI tasks will be represented in a structured format, likely a `tasks.json` file, which aggregates information from the individual task files (`./tasks` directory). The mapping will occur from these aggregated properties.
+
+    * `id`: String (e.g., "4") - Derived from `# Task ID:` in the individual task file.
+    * `title`: String - Derived from `# Title:` in the individual task file.
+    * `status`: String - Derived from `# Status:` in the individual task file.
+    * `dependencies`: String (e.g., "2, 3") - Derived from `# Dependencies:` in the individual task file.
+    * `priority`: String - Derived from `# Priority:` in the individual task file.
+    * `description_text`: String - Concatenated content from `# Description:`, `# Details:`, and `# Test Strategy:` sections of the individual task file. This aggregated text will be treated as the primary "description" for Monday.com.
+    * `monday_item_id`: String (New field, to be added to `tasks.json` on successful sync) - Stores the unique identifier of the corresponding Monday.com item.
+
+2.  **Monday.com Item:**
+    * `Item Name`: String (maps to TaskMaster `title`)
+    * `Info Box`: Text field (maps to TaskMaster `description_text`). The content will be formatted to clearly separate the original Description, Details, and Test Strategy sections.
+    * `Task ID Column`: String column (maps to TaskMaster `id`).
+    * `Status Column`: Monday.com status column (maps to TaskMaster `status`).
+        * **Defined Mapping:** "Backlog", "In Progress", "Ready for Integrity Review", "Integrity Review", "Ready for Client Review", "Client Review", "Done" will be mapped between TaskMaster `status` and Monday.com `Status Column` options.
+    * `Dependencies Column`: String column (maps to TaskMaster `dependencies`).
+    * `Priority Column`: Monday.com select/options column (maps to TaskMaster `priority`).
+        * **Defined Mapping:** "low", "medium", "high" will be mapped between TaskMaster `priority` and Monday.com `Priority Column` options.
+    * `Complexity Column`: Monday.com select/options column. **(Unmapped from TaskMaster in MVP)**. This column will not be populated or updated by the sync process initially.
+    * `Item ID`: Unique identifier in Monday.com.
+    * `updated_at` timestamp: Used by the sync scripts for change detection.
+
+3.  **Synchronization Configuration File (`./sync-config.json`):**
+    * `monday_board_id`: String (ID of the Monday.com board to sync with)
+    * `monday_group_ids`: Array of Strings (IDs of groups within the board to sync with)
+    * `monday_api_key`: String (API key for Monday.com authentication)
+    * `developer_id`: String (A unique identifier for the developer/TaskMaster instance, used for logging and potentially for attributing updates pushed to Monday.com, e.g., "Update by TM (Dev ID: xyz): ...")
+
+4.  **Local Sync State File (e.g., `./.taskmaster_sync_state.json`):**
+    * A map of Monday.com Item IDs to their last synced `updated_at` timestamps. This file will primarily be used for efficient change detection during pull operations and for conflict resolution. The `monday_item_id` will also be directly stored in `tasks.json` for primary mapping.
+
+---
+
+## APIs and Integrations
+1.  **Monday.com API:**
+    * GraphQL API.
+    * Used for:
+        * Authenticating using the API key.
+        * Querying boards, groups, and items (including their column values and updates).
+        * Creating new items.
+        * Updating existing items (name, status column).
+        * Posting new updates to items (for descriptions).
+2.  **Local File System Access:**
+    * The Local Sync Commands/Scripts require read/write access to:
+        * `./tasks.json` (read task data for push, write task data for pull).
+        * `./sync-config.json` (read configuration).
+        * Its own local state/cache file (read/write).
+
+---
+
+## Infrastructure Requirements
+1.  **Developer's Local Machine:**
+    * The Local Sync Commands/Scripts run directly on the developer's machine.
+    * Sufficient resources to run the scripts (e.g., Node.js, Python, or other chosen runtime environment).
+    * Persistent internet connectivity for communication with the Monday.com API.
+2.  **CI/CD Environment (Optional):**
+    * GitHub Actions, GitLab CI, Jenkins, etc.
+    * Ability to install necessary dependencies and execute the sync commands.
+    * Secure storage for `monday_api_key` (e.g., environment variables, secrets management).
+
+---
+
+# Development Roadmap
+
+## MVP Requirements
+The goal of the MVP is to establish a foundational, usable one-way push synchronization from TaskMaster AI's `tasks.json` to Monday.com, providing immediate visibility for the team.
+
+1.  **One-Way Synchronization (TaskMaster AI `tasks.json` -> Monday.com):**
+    * **Fields to Sync:**
+        * TaskMaster Task Name (`title`) -> Monday.com Item Name.
+        * TaskMaster Task `description_text` (concatenated description/details/test strategy) -> Monday.com Item's Info Box.
+        * TaskMaster Task `id` -> Monday.com `Task ID` Column.
+        * TaskMaster Task `status` -> Monday.com `Status` Column value.
+        * TaskMaster Task `dependencies` -> Monday.com `Dependencies` Column.
+        * TaskMaster Task `priority` -> Monday.com `Priority` Column value.
+    * **Operations:**
+        * Creation of new items in Monday.com if a task exists in `tasks.json` but does not have a corresponding `monday_item_id`.
+        * Updates to existing Monday.com items (identified by `monday_item_id`) when corresponding TaskMaster tasks in `tasks.json` are changed.
+        * Upon successful creation or update, the `monday_item_id` will be written back to the `tasks.json` file for the corresponding task.
+2.  **Project-Based Configuration (`./sync-config.json`):**
+    * Ability to specify `monday_board_id`, `monday_group_ids`, and `monday_api_key`.
+    * Include `developer_id` for logging.
+    * The sync scripts must parse this file to get its settings.
+3.  **Fixed Status Mapping:**
+    * Implement the agreed-upon status list: "Backlog", "In Progress", "Ready for Integrity Review", "Integrity Review", "Ready for Client Review", "Client Review", "Done". Map these between `tasks.json` and Monday.com.
+4.  **Manual Sync Commands:**
+    * A CLI command (e.g., `taskmaster-sync push`) for the developer to manually initiate the synchronization process from `tasks.json` to Monday.com.
+    * A CLI command (e.g., `taskmaster-sync pull`) for the developer to manually initiate the synchronization process from Monday.com to `tasks.json`.
+5.  **Local Task Data Reading/Writing:**
+    * The sync scripts must be able to read task data from and write task data to the `tasks.json` file.
+6.  **Basic Logging:**
+    * Output logs to the CLI detailing sync actions (e.g., "Task 'ABC' created in Monday.com", "Status of Task 'XYZ' updated to 'In Progress' in Monday.com") and any errors encountered.
+7.  **Local Sync State for Change Detection:**
+    * The `./.taskmaster_sync_state.json` file will store Monday.com item IDs and their `updated_at` timestamps to efficiently detect changes during pull operations and for conflict resolution.
+
+---
+
+## Future Enhancements (Post-MVP)
+These features will build upon the MVP to provide full bi-directional functionality and a richer user experience, executed via commands rather than a continuous service.
+
+1.  **Comprehensive Bi-Directional Synchronization:**
+    * Enhance `taskmaster-sync pull` to update `tasks.json` from Monday.com for Name, Status, and `description_text` (derived from the latest relevant Update or Info Box content).
+    * Integrate conflict resolution into both `push` and `pull` commands.
+2.  **Conflict Resolution:**
+    * When changes occur in both `tasks.json` and Monday.com concurrently (detected by comparing local state/timestamps with Monday.com's `updated_at` timestamps), the developer will be prompted via CLI to choose:
+        * Keep local version and push.
+        * Pull remote version and overwrite local.
+        * (Future) More advanced merge options or skip.
+    * This prompt should occur *before* pushing local changes if the remote item is newer, and when pulling changes that conflict with un-pushed local changes.
+3.  **New Item Discovery (Monday.com -> TaskMaster AI):**
+    * The `taskmaster-sync pull` command will also discover new items on the configured Monday.com board/group(s) that are not yet present locally in `tasks.json`.
+    * These new items will be created in `tasks.json`, including their `monday_item_id`.
+4.  **Synchronization of Additional Fields:**
+    * `Complexity` (bi-directional mapping).
+    * Initially as informal text within the Monday.com Update.
+    * Future: Potentially map to dedicated custom columns in Monday.com and structured fields in `tasks.json`, which would require more robust parsing for bi-directional sync.
+5.  **Git Hook/npm Script Integration Examples:**
+    * Provide example scripts for running `taskmaster-sync push` on `pre-push` Git hook or as an `npm run sync-push` script.
+    * Provide example scripts for running `taskmaster-sync pull` on `post-checkout` or as an `npm run sync-pull` script.
+6.  **CI/CD Integration Examples:**
+    * Demonstrate how to run `taskmaster-sync push` or `pull` within GitHub Actions workflows, ensuring API keys are securely handled.
+7.  **Improved CLI and Sync Status Visibility:**
+    * More detailed status reports (pending changes, last sync time, errors).
+    * Options to force sync, resolve individual conflicts, etc.
+8.  **Visual Indication in Monday.com (Optional Enhancement):**
+    * Consider adding a custom column in Monday.com (e.g., "TM Synced," "Last TM Sync Timestamp," or "Last TM Update by Dev ID") to provide transparency for Monday.com users about the sync status or origin of an update.
+9.  **Enhanced Security for API Key:**
+    * Explore options beyond plain text in config, such as environment variables or OS keychain integration for local execution.
+
+---
+
+## Logical Dependency Chain
+
+1.  **Foundation (MVP Core):**
+    * **Configuration:** Define and implement parsing for `./sync-config.json`.
+    * **TaskMaster AI JSON Reader/Writer:** Implement logic to read and interpret task data from, and write task data to, the `./tasks.json` file.
+    * **Monday.com API Client (Basic):** Implement core functions: authentication, fetching board/group details, creating items, updating item name, posting updates (for description), and changing status column values.
+    * **State Management (Minimal):** Logic to store and retrieve Monday.com item `updated_at` timestamps for change detection. Logic to store `monday_item_id` directly in `tasks.json`.
+    * **One-Way Push Sync Logic (TM -> Monday):** Orchestrate reading `tasks.json`, comparing with Monday (via stored IDs or querying by name), and creating/updating items in Monday. Upon success, update `tasks.json` with `monday_item_id`.
+    * **CLI Trigger (Manual Push):** Simple command to initiate the one-way push sync.
+    * **CLI Trigger (Manual Pull - Basic):** Command to fetch items from Monday.com and *display* potential updates without writing to `tasks.json` initially.
+    * **Basic Logging:** Implement logging throughout the process.
+2.  **Getting to Bi-Directional Sync (Post-MVP):**
+    * **Enhanced Monday.com Pull Logic:** Implement logic to pull changes from Monday.com (new items, updated names, statuses, and `description_text`).
+    * **Local TaskMaster AI Update Mechanism:** Safely update `tasks.json` based on confirmed changes from Monday.com. This needs to be robust to avoid data corruption.
+    * **Conflict Detection & CLI Prompting:** Implement logic to detect conflicts (local changes vs. newer remote changes, or incoming remote changes vs. unpushed local changes) and prompt the user for resolution via CLI for both `push` and `pull` commands.
+3.  **Atomic Features & Iteration:**
+    * Each direction of sync for each field can be seen as an incremental step.
+    * Conflict resolution can start simple (e.g., "choose local" or "choose remote") and evolve.
+    * Syncing additional fields (priority, complexity) can be added one by one.
+    * Automated discovery of new Monday.com items builds upon the pull mechanism.
+    * Integration examples for Git hooks and CI/CD can be provided once the core commands are stable.
+
+---
+
+# Risks and Mitigations
+
+1.  **Technical Challenges:**
+    * **Conflict Resolution Logic:** Defining and implementing robust conflict resolution can be complex, especially with multiple potential edit points when using explicit push/pull commands.
+        * **Mitigation:** For push, the command *must* first fetch the latest state of the item from Monday.com. If the Monday.com item's `updated_at` is newer than the agent's cached timestamp for that item (or the one in `tasks.json`), a conflict is detected, and the developer is prompted *before* any push occurs. For pull, the agent will detect new/updated items and prompt if they conflict with un-pushed local changes in `tasks.json`. Keep prompts simple initially.
+    * **Atomicity of Local File Updates:** Ensuring `tasks.json` files are not corrupted if the sync script crashes or if TaskMaster AI itself is writing simultaneously.
+        * **Mitigation:** Use safe-write patterns (e.g., write to a temporary file then rename), checksums, or journaling if feasible.
+    * **Monday.com API Rate Limits:** Frequent manual pushes or large batch updates could hit rate limits, especially in CI/CD.
+        * **Mitigation:** Design efficient API calls (e.g., batching mutations). Implement respectful delays between calls or retries with exponential backoff. Handle rate limit responses gracefully.
+    * **Local Sync Script Reliability & Errors:** The scripts need to run reliably and handle errors gracefully.
+        * **Mitigation:** Implement comprehensive error handling and provide clear, actionable log messages.
+    * **Parsing Description from Monday.com Updates (Bi-directional):** If Monday.com "Updates" are used for description and also for general team communication, distinguishing the "canonical" description to sync back to `tasks.json` can be difficult.
+        * **Mitigation:** Define a clear rule (e.g., content of the latest update, or latest update with a specific keyword/marker if team discipline allows). Acknowledge this might not be perfect.
+
+2.  **Figuring out the MVP that we can build upon:**
+    * **Risk:** Over-scoping the MVP.
+        * **Mitigation:** The defined MVP (one-way push sync of core fields, manual push/pull triggers, basic config/logging, and writing `monday_item_id` to `tasks.json`) is focused and achievable, providing a solid foundation for command-driven bi-directional sync.
+
+3.  **Multiple Developers & Data Integrity on Shared Monday.com Board:**
+    * **Risk:** With multiple developers executing sync commands against the same Monday.com items, there's a risk of uncoordinated updates or race conditions if conflict resolution is not robust.
+        * **Mitigation:**
+            * Each local sync execution maintains its own understanding of `updated_at` timestamps for Monday.com items.
+            * **Before pushing changes to Monday.com:** The command *must* first fetch the latest state of the item from Monday.com. If the Monday.com item's `updated_at` is newer than the `updated_at` recorded in `tasks.json` or the local sync state for that item, a conflict is detected, and the developer is prompted *before* any push occurs.
+            * **When pulling changes:** All items on the configured board/group are considered. The local command uses its cache to determine if a Monday item is new or updated. Conflict resolution prompts if incoming changes clash with un-pushed local changes in `tasks.json`.
+            * The `developer_id` in `./sync-config.json` can be used to tag updates pushed to Monday (e.g., in the update text: "Synced by TM (Dev ID: xyz)"), providing an audit trail and helping developers identify the source of changes.
+
+4.  **Security of Monday.com API Key:**
+    * **Risk:** Storing the API key in a plain text configuration file (`./sync-config.json`) can be a security risk if the file is not properly secured or accidentally committed to version control. This risk is amplified when running in CI/CD environments if not handled securely.
+        * **Mitigation:**
+            * Strongly advise users to add `./sync-config.json` to `.gitignore`.
+            * Document best practices for file permissions.
+            * (Future Enhancement) Explore more secure storage options like environment variables (especially for CI/CD) or OS keychain integration for local execution.
+
+---
+
+# Appendix
+
+[This section can be populated later with specific research findings, detailed technical specifications for `tasks.json` file format, or links to Monday.com API documentation for specific queries used.]
+
+---
+*Initial research into Monday.com API capabilities (GraphQL, item/column manipulation) indicates general feasibility for the proposed command-driven features.*
+*Detailed structure of `./tasks.json` file to be documented here.*
+---
+</PRD>

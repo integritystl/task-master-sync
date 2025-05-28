@@ -1,0 +1,32 @@
+# Task ID: 4
+# Title: Implement Monday.com API Client
+# Status: done
+# Dependencies: 2
+# Priority: high
+# Description: Develop a client for interacting with the Monday.com API, focusing on core CRUD operations for items.
+# Details:
+1. Create a new module 'mondayClient.js' in the src directory.
+2. Use the official @monday/api-client package (latest version) for API interactions.
+3. Implement functions for:
+   - Authenticating with the Monday.com API using the API key from the config.
+   - Fetching board and group details.
+   - Creating new items.
+   - Updating item names.
+   - Posting updates to items (for description).
+   - Changing status column values.
+   - Fetching item details including column values.
+4. Implement error handling for API errors, including rate limiting.
+5. Add retry logic with exponential backoff for recoverable errors.
+6. Implement request batching for mutations to optimize API usage.
+7. Add logging for API interactions (using winston 3.x for structured logging).
+8. Implement a simple cache for board and group details to reduce API calls.
+
+# Test Strategy:
+1. Write unit tests for the mondayClient module:
+   - Mock API responses using Jest's mocking capabilities.
+   - Test successful API interactions for each implemented function.
+   - Test error handling and retry logic.
+   - Test request batching functionality.
+   - Test caching mechanism for board and group details.
+2. Implement integration tests that interact with a test Monday.com board (using a separate API key for testing).
+3. Use nock (version 13.x) to mock HTTP requests in tests to simulate various API responses and errors.

@@ -1,0 +1,70 @@
+# Task ID: 8
+# Title: Implement Basic Pull Sync Logic
+# Status: done
+# Dependencies: 3, 4, 5
+# Priority: medium
+# Description: Develop the initial logic for pulling data from Monday.com and displaying potential updates.
+# Details:
+1. Create a new module 'pullSyncLogic.js' in the src directory.
+2. Implement the main pull sync function:
+   - Fetch items from the configured Monday.com board and groups.
+   - Compare fetched items with local tasks in tasks.json.
+   - Identify new items and updates to existing items.
+   - Generate a report of potential updates without writing to tasks.json.
+3. Implement field mapping logic (reverse of push sync):
+   - Map Monday.com item name to TaskMaster task name.
+   - Extract description, details, and test strategy from Monday.com Info Box.
+   - Map Monday.com Task ID column to TaskMaster task ID.
+   - Map Monday.com Status column to TaskMaster status.
+   - Map Monday.com Dependencies column to TaskMaster dependencies.
+   - Map Monday.com Priority column to TaskMaster priority.
+4. Implement error handling and logging throughout the process.
+5. Add functionality to detect conflicts (e.g., local changes that haven't been pushed).
+6. Implement batching for Monday.com API calls to optimize performance.
+
+# Test Strategy:
+1. Write unit tests for the pullSyncLogic module:
+   - Test the field mapping logic for various Monday.com item states.
+   - Test the main pull sync function with mocked dependencies.
+   - Test error handling and edge cases (e.g., API errors, missing fields).
+   - Test conflict detection logic.
+2. Implement integration tests that use a test Monday.com board and a sample tasks.json file.
+3. Use Jest's mocking capabilities to simulate various scenarios and API responses.
+
+# Subtasks:
+## 1. Design Data Fetching Module [done]
+### Dependencies: None
+### Description: Create a module responsible for retrieving data from the source system or API, ensuring efficient and reliable data acquisition.
+### Details:
+This module should handle asynchronous data requests, support pagination or batching if necessary, and provide a clean interface for other modules to access fetched data.
+
+## 2. Implement Data Comparison Module [done]
+### Dependencies: 8.1
+### Description: Develop a module to compare newly fetched data against existing local data to identify changes, additions, or deletions.
+### Details:
+This module will analyze differences at the record and field level to determine what needs to be updated, inserted, or removed during synchronization.
+
+## 3. Create Field Mapping Module [done]
+### Dependencies: 8.2
+### Description: Build a module that maps fields between the source data structure and the local data model to ensure correct data alignment during sync.
+### Details:
+This module should handle transformations, data type conversions, and any necessary normalization to maintain data integrity.
+
+## 4. Develop Conflict Detection Module [done]
+### Dependencies: 8.2
+### Description: Implement logic to detect conflicts when data changes occur simultaneously on both source and local systems.
+### Details:
+This module should identify conflicting updates and flag them for resolution, possibly integrating with error handling or user intervention workflows.
+
+## 5. Establish Error Handling Module [done]
+### Dependencies: 8.1, 8.2, 8.3, 8.4
+### Description: Create a centralized module to manage errors arising during data fetching, comparison, mapping, and conflict detection.
+### Details:
+This module should log errors, provide retry mechanisms, and ensure graceful degradation or recovery to maintain sync stability.
+
+## 6. Implement Batching and Sync Orchestration Module [done]
+### Dependencies: 8.1, 8.2, 8.3, 8.4, 8.5
+### Description: Design a module to batch data operations and orchestrate the overall pull sync process efficiently.
+### Details:
+This module will manage the execution order, batch sizes, and timing of sync operations to optimize performance and resource usage.
+

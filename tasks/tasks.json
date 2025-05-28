@@ -1,0 +1,249 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Setup Project Repository and Development Environment",
+      "description": "Initialize the project repository and set up the development environment for the TaskMaster AI to Monday.com sync tool.",
+      "details": "1. Create a new Git repository for the project.\n2. Initialize a Node.js project with npm init.\n3. Set up ESLint and Prettier for code linting and formatting.\n4. Create a basic project structure with directories for src, tests, and config.\n5. Set up a test runner (Jest recommended) for unit testing.\n6. Create a .gitignore file, including entries for node_modules, .env, and sync-config.json.\n7. Set up a README.md with basic project information and setup instructions.\n8. Install necessary dependencies:\n   - @monday/api-client (latest version) for Monday.com API interactions\n   - commander (latest version) for CLI functionality\n   - dotenv (latest version) for environment variable management\n   - fs-extra (latest version) for enhanced file system operations\n9. Set up a basic CLI entry point using commander.",
+      "testStrategy": "1. Verify that the repository is correctly initialized with all necessary files and directories.\n2. Ensure all dependencies are correctly installed and the project builds without errors.\n3. Run ESLint to confirm proper code style configuration.\n4. Execute a sample test using the configured test runner to verify the testing setup.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "subtasks": [],
+      "monday_item_id": "9245490360"
+    },
+    {
+      "title": "Implement Configuration Parser",
+      "monday_item_id": "9245490415",
+      "id": 2,
+      "status": "done",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "description": "Create a module to parse and validate the sync-config.json file.",
+      "details": "1. Create a new module 'configParser.js' in the src directory.\n2. Implement a function to read and parse the sync-config.json file.\n3. Use Joi (version 17.x) for schema validation of the config file contents.\n4. Define the schema for sync-config.json:\n   - monday_board_id: required string\n   - monday_group_ids: array of strings\n   - monday_api_key: required string\n   - developer_id: required string\n5. Implement error handling for file reading and parsing errors.\n6. Create a function to validate the parsed configuration against the defined schema.\n7. Implement a caching mechanism to avoid re-reading the file on every operation.\n8. Export functions for getting specific config values and the entire config object.",
+      "testStrategy": "1. Write unit tests for the configParser module:\n   - Test successful parsing of a valid sync-config.json file.\n   - Test error handling for missing or malformed sync-config.json file.\n   - Test validation errors for incomplete or invalid configuration.\n   - Test caching mechanism by verifying that file is not re-read unnecessarily.\n2. Create sample valid and invalid sync-config.json files for testing.\n3. Use Jest's mocking capabilities to simulate file system interactions.",
+      "subtasks": []
+    },
+    {
+      "title": "Develop TaskMaster AI JSON Reader/Writer",
+      "monday_item_id": "9245490477",
+      "id": 3,
+      "status": "done",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "description": "Create a module to read from and write to the tasks.json file used by TaskMaster AI.",
+      "details": "1. Create a new module 'taskMasterIO.js' in the src directory.\n2. Implement a function to read and parse the tasks.json file.\n3. Use the 'fs-extra' package for file operations to handle errors and edge cases better.\n4. Implement a function to write updates back to the tasks.json file.\n5. Ensure atomic write operations to prevent data corruption (use write to temp file and rename strategy).\n6. Implement functions to:\n   - Get all tasks\n   - Get a specific task by ID\n   - Update a specific task\n   - Add a new task\n   - Delete a task\n7. Implement error handling for file operations and data integrity checks.\n8. Use JSON schema validation (ajv 8.x) to ensure the integrity of the tasks.json structure when reading and writing.\n9. Implement a simple locking mechanism to prevent concurrent writes.",
+      "testStrategy": "1. Write unit tests for the taskMasterIO module:\n   - Test reading a valid tasks.json file.\n   - Test writing updates to tasks.json file.\n   - Test error handling for missing or corrupt tasks.json file.\n   - Test CRUD operations on tasks.\n   - Test atomic write operations by simulating interruptions.\n   - Test locking mechanism by simulating concurrent operations.\n2. Create sample tasks.json files with various states (empty, single task, multiple tasks) for testing.\n3. Use Jest's mocking capabilities to simulate file system interactions and test error scenarios.",
+      "subtasks": []
+    },
+    {
+      "title": "Implement Monday.com API Client",
+      "monday_item_id": "9245490553",
+      "id": 4,
+      "status": "done",
+      "priority": "high",
+      "dependencies": [
+        2
+      ],
+      "description": "Develop a client for interacting with the Monday.com API, focusing on core CRUD operations for items.",
+      "details": "1. Create a new module 'mondayClient.js' in the src directory.\n2. Use the official @monday/api-client package (latest version) for API interactions.\n3. Implement functions for:\n   - Authenticating with the Monday.com API using the API key from the config.\n   - Fetching board and group details.\n   - Creating new items.\n   - Updating item names.\n   - Posting updates to items (for description).\n   - Changing status column values.\n   - Fetching item details including column values.\n4. Implement error handling for API errors, including rate limiting.\n5. Add retry logic with exponential backoff for recoverable errors.\n6. Implement request batching for mutations to optimize API usage.\n7. Add logging for API interactions (using winston 3.x for structured logging).\n8. Implement a simple cache for board and group details to reduce API calls.",
+      "testStrategy": "1. Write unit tests for the mondayClient module:\n   - Mock API responses using Jest's mocking capabilities.\n   - Test successful API interactions for each implemented function.\n   - Test error handling and retry logic.\n   - Test request batching functionality.\n   - Test caching mechanism for board and group details.\n2. Implement integration tests that interact with a test Monday.com board (using a separate API key for testing).\n3. Use nock (version 13.x) to mock HTTP requests in tests to simulate various API responses and errors.",
+      "subtasks": []
+    },
+    {
+      "title": "Develop Local Sync State Management",
+      "monday_item_id": "9245490603",
+      "id": 5,
+      "status": "done",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "description": "Implement a mechanism to store and manage the local sync state, including Monday.com item IDs and timestamps.",
+      "details": "1. Create a new module 'syncStateManager.js' in the src directory.\n2. Implement functions to read from and write to the .taskmaster_sync_state.json file.\n3. Use the 'fs-extra' package for file operations.\n4. Implement functions to:\n   - Get the last synced timestamp for a specific Monday.com item ID.\n   - Update the synced timestamp for a Monday.com item ID.\n   - Remove a Monday.com item ID from the sync state.\n   - Get all synced Monday.com item IDs.\n5. Implement error handling for file operations.\n6. Ensure atomic write operations to prevent data corruption.\n7. Implement a simple locking mechanism to prevent concurrent writes.\n8. Add a cleanup function to remove old entries that are no longer relevant.",
+      "testStrategy": "1. Write unit tests for the syncStateManager module:\n   - Test reading and writing to the .taskmaster_sync_state.json file.\n   - Test CRUD operations on sync state entries.\n   - Test error handling for file operations.\n   - Test atomic write operations.\n   - Test the locking mechanism.\n   - Test the cleanup function.\n2. Create sample .taskmaster_sync_state.json files with various states for testing.\n3. Use Jest's mocking capabilities to simulate file system interactions and test error scenarios.",
+      "subtasks": []
+    },
+    {
+      "title": "Implement One-Way Push Sync Logic",
+      "monday_item_id": "9245490650",
+      "id": 6,
+      "status": "done",
+      "priority": "high",
+      "dependencies": [
+        3,
+        4,
+        5
+      ],
+      "description": "Develop the core logic for pushing TaskMaster AI tasks to Monday.com.",
+      "details": "1. Create a new module 'pushSyncLogic.js' in the src directory.\n2. Implement the main push sync function that orchestrates the sync process:\n   - Read tasks from tasks.json.\n   - For each task, check if it has a monday_item_id:\n     - If yes, fetch the current state from Monday.com and update if needed.\n     - If no, create a new item in Monday.com.\n   - Update tasks.json with new monday_item_id for newly created items.\n   - Update the local sync state with new timestamps.\n3. Implement field mapping logic:\n   - Map TaskMaster task name to Monday.com item name.\n   - Concatenate description, details, and test strategy into Monday.com Info Box.\n   - Map TaskMaster task ID to Monday.com Task ID column.\n   - Map TaskMaster status to Monday.com Status column.\n   - Map TaskMaster dependencies to Monday.com Dependencies column.\n   - Map TaskMaster priority to Monday.com Priority column.\n4. Implement error handling and logging throughout the process.\n5. Add a dry-run option that shows what would be synced without making actual changes.\n6. Implement batching for Monday.com API calls to optimize performance.",
+      "testStrategy": "1. Write unit tests for the pushSyncLogic module:\n   - Test the field mapping logic for various task states.\n   - Test the main push sync function with mocked dependencies.\n   - Test error handling and edge cases (e.g., API errors, missing fields).\n   - Test the dry-run functionality.\n2. Implement integration tests that use a test Monday.com board and a sample tasks.json file.\n3. Use Jest's mocking capabilities to simulate various scenarios and API responses.",
+      "subtasks": []
+    },
+    {
+      "title": "Implement CLI for Manual Push Sync",
+      "monday_item_id": "9245490705",
+      "id": 7,
+      "status": "done",
+      "priority": "medium",
+      "dependencies": [
+        6
+      ],
+      "description": "Develop a command-line interface for manually triggering the push sync process.",
+      "details": "1. Create a new module 'cli.js' in the src directory.\n2. Use the 'commander' package to set up the CLI structure.\n3. Implement a 'push' command that triggers the push sync process.\n4. Add options to the push command:\n   - --dry-run: Show what would be synced without making changes.\n   - --verbose: Increase logging detail.\n5. Implement user-friendly console output for sync progress and results.\n6. Add error handling and user-friendly error messages.\n7. Implement a 'version' command to display the tool version.\n8. Add a 'help' command to display usage instructions.",
+      "testStrategy": "1. Write unit tests for the CLI module:\n   - Test command parsing and option handling.\n   - Test the integration with the push sync logic (using mocks).\n   - Test error handling and output formatting.\n2. Implement end-to-end tests that run the CLI with various arguments and verify the output.\n3. Use Jest's mocking capabilities to simulate various scenarios and user inputs.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Initialization and Board Details Fetch",
+          "description": "Set up the initial environment and fetch details of the relevant monday.com boards involved in the sync process.",
+          "dependencies": [],
+          "details": "This includes connecting to monday.com API, authenticating, and retrieving metadata about the boards such as board IDs, column structures, and linked boards if any.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Local Task Loading",
+          "description": "Load tasks from the local system or local cache that need to be synced with monday.com boards.",
+          "dependencies": [
+            1
+          ],
+          "details": "This step involves reading local task data, possibly filtering or preparing it for comparison with monday.com items to detect changes or new entries.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Monday.com Item Fetching",
+          "description": "Fetch items from monday.com boards that correspond to the local tasks for synchronization.",
+          "dependencies": [
+            1
+          ],
+          "details": "Retrieve current items and their states from monday.com to compare with local tasks, enabling two-way sync or update detection.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Change Detection",
+          "description": "Detect changes between local tasks and monday.com items to determine what needs to be updated, created, or deleted.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Compare local and remote data sets to identify differences in task status, fields, or new/deleted items, supporting rules or filters for selective syncing.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Update Display Logic",
+          "description": "Implement logic to update the user interface or display based on detected changes and sync results.",
+          "dependencies": [
+            4
+          ],
+          "details": "This includes showing sync status, errors, or confirmations to the user, and refreshing task views to reflect the latest synchronized data.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "title": "Implement Basic Pull Sync Logic",
+      "monday_item_id": "9245490759",
+      "id": 8,
+      "status": "done",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        4,
+        5
+      ],
+      "description": "Develop the initial logic for pulling data from Monday.com and displaying potential updates.",
+      "details": "1. Create a new module 'pullSyncLogic.js' in the src directory.\n2. Implement the main pull sync function:\n   - Fetch items from the configured Monday.com board and groups.\n   - Compare fetched items with local tasks in tasks.json.\n   - Identify new items and updates to existing items.\n   - Generate a report of potential updates without writing to tasks.json.\n3. Implement field mapping logic (reverse of push sync):\n   - Map Monday.com item name to TaskMaster task name.\n   - Extract description, details, and test strategy from Monday.com Info Box.\n   - Map Monday.com Task ID column to TaskMaster task ID.\n   - Map Monday.com Status column to TaskMaster status.\n   - Map Monday.com Dependencies column to TaskMaster dependencies.\n   - Map Monday.com Priority column to TaskMaster priority.\n4. Implement error handling and logging throughout the process.\n5. Add functionality to detect conflicts (e.g., local changes that haven't been pushed).\n6. Implement batching for Monday.com API calls to optimize performance.",
+      "testStrategy": "1. Write unit tests for the pullSyncLogic module:\n   - Test the field mapping logic for various Monday.com item states.\n   - Test the main pull sync function with mocked dependencies.\n   - Test error handling and edge cases (e.g., API errors, missing fields).\n   - Test conflict detection logic.\n2. Implement integration tests that use a test Monday.com board and a sample tasks.json file.\n3. Use Jest's mocking capabilities to simulate various scenarios and API responses.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design Data Fetching Module",
+          "description": "Create a module responsible for retrieving data from the source system or API, ensuring efficient and reliable data acquisition.",
+          "dependencies": [],
+          "details": "This module should handle asynchronous data requests, support pagination or batching if necessary, and provide a clean interface for other modules to access fetched data.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement Data Comparison Module",
+          "description": "Develop a module to compare newly fetched data against existing local data to identify changes, additions, or deletions.",
+          "dependencies": [
+            1
+          ],
+          "details": "This module will analyze differences at the record and field level to determine what needs to be updated, inserted, or removed during synchronization.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Create Field Mapping Module",
+          "description": "Build a module that maps fields between the source data structure and the local data model to ensure correct data alignment during sync.",
+          "dependencies": [
+            2
+          ],
+          "details": "This module should handle transformations, data type conversions, and any necessary normalization to maintain data integrity.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Develop Conflict Detection Module",
+          "description": "Implement logic to detect conflicts when data changes occur simultaneously on both source and local systems.",
+          "dependencies": [
+            2
+          ],
+          "details": "This module should identify conflicting updates and flag them for resolution, possibly integrating with error handling or user intervention workflows.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Establish Error Handling Module",
+          "description": "Create a centralized module to manage errors arising during data fetching, comparison, mapping, and conflict detection.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "This module should log errors, provide retry mechanisms, and ensure graceful degradation or recovery to maintain sync stability.",
+          "status": "done"
+        },
+        {
+          "id": 6,
+          "title": "Implement Batching and Sync Orchestration Module",
+          "description": "Design a module to batch data operations and orchestrate the overall pull sync process efficiently.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "details": "This module will manage the execution order, batch sizes, and timing of sync operations to optimize performance and resource usage.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "title": "Extend CLI for Manual Pull Sync",
+      "monday_item_id": "9245490814",
+      "id": 9,
+      "status": "done",
+      "priority": "medium",
+      "dependencies": [
+        7,
+        8
+      ],
+      "description": "Extend the command-line interface to support manually triggering the pull sync process.",
+      "details": "1. Extend the 'cli.js' module in the src directory.\n2. Implement a 'pull' command that triggers the pull sync process.\n3. Add options to the pull command:\n   - --dry-run: Show what would be pulled without making changes (default behavior for MVP).\n   - --verbose: Increase logging detail.\n4. Implement user-friendly console output for displaying potential updates.\n5. Format the output to clearly show new items, updated items, and potential conflicts.\n6. Add error handling and user-friendly error messages.\n7. Update the 'help' command to include information about the new pull command.",
+      "testStrategy": "1. Extend unit tests for the CLI module:\n   - Test command parsing and option handling for the pull command.\n   - Test the integration with the pull sync logic (using mocks).\n   - Test error handling and output formatting for pull results.\n2. Implement end-to-end tests that run the CLI with various pull command arguments and verify the output.\n3. Use Jest's mocking capabilities to simulate various scenarios and user inputs for pull operations.",
+      "subtasks": []
+    }
+  ]
+}

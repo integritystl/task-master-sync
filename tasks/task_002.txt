@@ -1,0 +1,28 @@
+# Task ID: 2
+# Title: Implement Configuration Parser
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Create a module to parse and validate the sync-config.json file.
+# Details:
+1. Create a new module 'configParser.js' in the src directory.
+2. Implement a function to read and parse the sync-config.json file.
+3. Use Joi (version 17.x) for schema validation of the config file contents.
+4. Define the schema for sync-config.json:
+   - monday_board_id: required string
+   - monday_group_ids: array of strings
+   - monday_api_key: required string
+   - developer_id: required string
+5. Implement error handling for file reading and parsing errors.
+6. Create a function to validate the parsed configuration against the defined schema.
+7. Implement a caching mechanism to avoid re-reading the file on every operation.
+8. Export functions for getting specific config values and the entire config object.
+
+# Test Strategy:
+1. Write unit tests for the configParser module:
+   - Test successful parsing of a valid sync-config.json file.
+   - Test error handling for missing or malformed sync-config.json file.
+   - Test validation errors for incomplete or invalid configuration.
+   - Test caching mechanism by verifying that file is not re-read unnecessarily.
+2. Create sample valid and invalid sync-config.json files for testing.
+3. Use Jest's mocking capabilities to simulate file system interactions.

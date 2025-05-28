@@ -1,0 +1,30 @@
+# Task ID: 5
+# Title: Develop Local Sync State Management
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Implement a mechanism to store and manage the local sync state, including Monday.com item IDs and timestamps.
+# Details:
+1. Create a new module 'syncStateManager.js' in the src directory.
+2. Implement functions to read from and write to the .taskmaster_sync_state.json file.
+3. Use the 'fs-extra' package for file operations.
+4. Implement functions to:
+   - Get the last synced timestamp for a specific Monday.com item ID.
+   - Update the synced timestamp for a Monday.com item ID.
+   - Remove a Monday.com item ID from the sync state.
+   - Get all synced Monday.com item IDs.
+5. Implement error handling for file operations.
+6. Ensure atomic write operations to prevent data corruption.
+7. Implement a simple locking mechanism to prevent concurrent writes.
+8. Add a cleanup function to remove old entries that are no longer relevant.
+
+# Test Strategy:
+1. Write unit tests for the syncStateManager module:
+   - Test reading and writing to the .taskmaster_sync_state.json file.
+   - Test CRUD operations on sync state entries.
+   - Test error handling for file operations.
+   - Test atomic write operations.
+   - Test the locking mechanism.
+   - Test the cleanup function.
+2. Create sample .taskmaster_sync_state.json files with various states for testing.
+3. Use Jest's mocking capabilities to simulate file system interactions and test error scenarios.

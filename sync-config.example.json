@@ -1,0 +1,29 @@
+{
+  "monday_board_id": "YOUR_BOARD_ID_HERE",
+  "monday_group_ids": ["YOUR_GROUP_ID_HERE"],
+  "monday_api_key": "YOUR_API_KEY_HERE",
+  "developer_id": "YOUR_ID_HERE",
+  "column_mappings": {
+    "taskId": "text_column_id",
+    "status": "status_column_id",
+    "priority": "priority_column_id",
+    "dependencies": "text_column_id",
+    "complexity": "color_column_id",
+    "description": "long_text_column_id",
+    "details": "long_text_column_id",
+    "testStrategy": "long_text_column_id"
+  },
+  "status_mappings": {
+    "pending": "Working on it",
+    "done": "Done",
+    "in-progress": "In Progress",
+    "review": "Under Review",
+    "deferred": "Stuck",
+    "cancelled": "Cancelled"
+  },
+  "priority_mappings": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  }
+} 

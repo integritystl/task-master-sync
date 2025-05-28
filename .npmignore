@@ -1,0 +1,56 @@
+# Development files
+.github/
+.vscode/
+.idea/
+.git/
+.gitignore
+.eslintrc.js
+.eslintignore
+.editorconfig
+.prettierrc
+.babelrc
+.DS_Store
+*.log
+*.tgz
+
+# Test files
+test/
+coverage/
+jest.config.js
+*.test.js
+__mocks__/
+
+# Examples and docs not needed in the package
+examples/
+docs/
+screenshots/
+*.md
+!README.md
+!LICENSE
+
+# Source control
+.git*
+
+# CI/CD
+.travis.yml
+.gitlab-ci.yml
+azure-pipelines.yml
+.circleci/
+.cursor/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Scripts that shouldn't be published
+scripts/test-*.js
+
+# Large dependencies or build artifacts
+node_modules/
+dist/temp/
+
+.taskmaster_sync_state.json
+.taskmasterconfig
+sync-config.json
+tasks/

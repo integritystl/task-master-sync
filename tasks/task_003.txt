@@ -1,0 +1,32 @@
+# Task ID: 3
+# Title: Develop TaskMaster AI JSON Reader/Writer
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Create a module to read from and write to the tasks.json file used by TaskMaster AI.
+# Details:
+1. Create a new module 'taskMasterIO.js' in the src directory.
+2. Implement a function to read and parse the tasks.json file.
+3. Use the 'fs-extra' package for file operations to handle errors and edge cases better.
+4. Implement a function to write updates back to the tasks.json file.
+5. Ensure atomic write operations to prevent data corruption (use write to temp file and rename strategy).
+6. Implement functions to:
+   - Get all tasks
+   - Get a specific task by ID
+   - Update a specific task
+   - Add a new task
+   - Delete a task
+7. Implement error handling for file operations and data integrity checks.
+8. Use JSON schema validation (ajv 8.x) to ensure the integrity of the tasks.json structure when reading and writing.
+9. Implement a simple locking mechanism to prevent concurrent writes.
+
+# Test Strategy:
+1. Write unit tests for the taskMasterIO module:
+   - Test reading a valid tasks.json file.
+   - Test writing updates to tasks.json file.
+   - Test error handling for missing or corrupt tasks.json file.
+   - Test CRUD operations on tasks.
+   - Test atomic write operations by simulating interruptions.
+   - Test locking mechanism by simulating concurrent operations.
+2. Create sample tasks.json files with various states (empty, single task, multiple tasks) for testing.
+3. Use Jest's mocking capabilities to simulate file system interactions and test error scenarios.

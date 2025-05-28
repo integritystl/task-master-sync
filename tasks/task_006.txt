@@ -1,0 +1,34 @@
+# Task ID: 6
+# Title: Implement One-Way Push Sync Logic
+# Status: done
+# Dependencies: 3, 4, 5
+# Priority: high
+# Description: Develop the core logic for pushing TaskMaster AI tasks to Monday.com.
+# Details:
+1. Create a new module 'pushSyncLogic.js' in the src directory.
+2. Implement the main push sync function that orchestrates the sync process:
+   - Read tasks from tasks.json.
+   - For each task, check if it has a monday_item_id:
+     - If yes, fetch the current state from Monday.com and update if needed.
+     - If no, create a new item in Monday.com.
+   - Update tasks.json with new monday_item_id for newly created items.
+   - Update the local sync state with new timestamps.
+3. Implement field mapping logic:
+   - Map TaskMaster task name to Monday.com item name.
+   - Concatenate description, details, and test strategy into Monday.com Info Box.
+   - Map TaskMaster task ID to Monday.com Task ID column.
+   - Map TaskMaster status to Monday.com Status column.
+   - Map TaskMaster dependencies to Monday.com Dependencies column.
+   - Map TaskMaster priority to Monday.com Priority column.
+4. Implement error handling and logging throughout the process.
+5. Add a dry-run option that shows what would be synced without making actual changes.
+6. Implement batching for Monday.com API calls to optimize performance.
+
+# Test Strategy:
+1. Write unit tests for the pushSyncLogic module:
+   - Test the field mapping logic for various task states.
+   - Test the main push sync function with mocked dependencies.
+   - Test error handling and edge cases (e.g., API errors, missing fields).
+   - Test the dry-run functionality.
+2. Implement integration tests that use a test Monday.com board and a sample tasks.json file.
+3. Use Jest's mocking capabilities to simulate various scenarios and API responses.

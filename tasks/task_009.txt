@@ -1,0 +1,24 @@
+# Task ID: 9
+# Title: Extend CLI for Manual Pull Sync
+# Status: done
+# Dependencies: 7, 8
+# Priority: medium
+# Description: Extend the command-line interface to support manually triggering the pull sync process.
+# Details:
+1. Extend the 'cli.js' module in the src directory.
+2. Implement a 'pull' command that triggers the pull sync process.
+3. Add options to the pull command:
+   - --dry-run: Show what would be pulled without making changes (default behavior for MVP).
+   - --verbose: Increase logging detail.
+4. Implement user-friendly console output for displaying potential updates.
+5. Format the output to clearly show new items, updated items, and potential conflicts.
+6. Add error handling and user-friendly error messages.
+7. Update the 'help' command to include information about the new pull command.
+
+# Test Strategy:
+1. Extend unit tests for the CLI module:
+   - Test command parsing and option handling for the pull command.
+   - Test the integration with the pull sync logic (using mocks).
+   - Test error handling and output formatting for pull results.
+2. Implement end-to-end tests that run the CLI with various pull command arguments and verify the output.
+3. Use Jest's mocking capabilities to simulate various scenarios and user inputs for pull operations.

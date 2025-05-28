@@ -1,0 +1,57 @@
+# Task ID: 7
+# Title: Implement CLI for Manual Push Sync
+# Status: done
+# Dependencies: 6
+# Priority: medium
+# Description: Develop a command-line interface for manually triggering the push sync process.
+# Details:
+1. Create a new module 'cli.js' in the src directory.
+2. Use the 'commander' package to set up the CLI structure.
+3. Implement a 'push' command that triggers the push sync process.
+4. Add options to the push command:
+   - --dry-run: Show what would be synced without making changes.
+   - --verbose: Increase logging detail.
+5. Implement user-friendly console output for sync progress and results.
+6. Add error handling and user-friendly error messages.
+7. Implement a 'version' command to display the tool version.
+8. Add a 'help' command to display usage instructions.
+
+# Test Strategy:
+1. Write unit tests for the CLI module:
+   - Test command parsing and option handling.
+   - Test the integration with the push sync logic (using mocks).
+   - Test error handling and output formatting.
+2. Implement end-to-end tests that run the CLI with various arguments and verify the output.
+3. Use Jest's mocking capabilities to simulate various scenarios and user inputs.
+
+# Subtasks:
+## 1. Initialization and Board Details Fetch [done]
+### Dependencies: None
+### Description: Set up the initial environment and fetch details of the relevant monday.com boards involved in the sync process.
+### Details:
+This includes connecting to monday.com API, authenticating, and retrieving metadata about the boards such as board IDs, column structures, and linked boards if any.
+
+## 2. Local Task Loading [done]
+### Dependencies: 7.1
+### Description: Load tasks from the local system or local cache that need to be synced with monday.com boards.
+### Details:
+This step involves reading local task data, possibly filtering or preparing it for comparison with monday.com items to detect changes or new entries.
+
+## 3. Monday.com Item Fetching [done]
+### Dependencies: 7.1
+### Description: Fetch items from monday.com boards that correspond to the local tasks for synchronization.
+### Details:
+Retrieve current items and their states from monday.com to compare with local tasks, enabling two-way sync or update detection.
+
+## 4. Change Detection [done]
+### Dependencies: 7.2, 7.3
+### Description: Detect changes between local tasks and monday.com items to determine what needs to be updated, created, or deleted.
+### Details:
+Compare local and remote data sets to identify differences in task status, fields, or new/deleted items, supporting rules or filters for selective syncing.
+
+## 5. Update Display Logic [done]
+### Dependencies: 7.4
+### Description: Implement logic to update the user interface or display based on detected changes and sync results.
+### Details:
+This includes showing sync status, errors, or confirmations to the user, and refreshing task views to reflect the latest synchronized data.
+
