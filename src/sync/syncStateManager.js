@@ -225,6 +225,7 @@ function createSyncStateManager(options = {}) {
       // Release the lock if it was acquired
       try {
         await releaseLock(syncFilePath, lockId);
+        // eslint-disable-next-line no-unused-vars
       } catch (unlockError) {
         // Ignore unlock errors
       }
@@ -277,6 +278,7 @@ function createSyncStateManager(options = {}) {
         // Clean up temporary file if it exists
         try {
           await fs.unlink(tempFilePath);
+          // eslint-disable-next-line no-unused-vars
         } catch (unlinkError) {
           // Ignore errors from unlink
         }
