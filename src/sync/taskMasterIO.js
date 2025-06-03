@@ -163,6 +163,7 @@ function createTaskMasterIO(options = {}) {
           // No wrapper object in the original file, write the array directly
           fileContent = JSON.stringify(tasks, null, 2);
         }
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
         // If the file doesn't exist or has invalid JSON, default to array format
         fileContent = JSON.stringify(tasks, null, 2);
@@ -187,6 +188,7 @@ function createTaskMasterIO(options = {}) {
       // Clean up temporary file if it exists
       try {
         await fs.unlink(tempFilePath);
+        // eslint-disable-next-line no-unused-vars
       } catch (unlinkError) {
         // Ignore errors from unlink
       }
