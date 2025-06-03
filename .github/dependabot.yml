@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'friday'
+      time: '06:00'
+      timezone: 'America/Chicago'
+    versioning-strategy: 'increase-if-necessary'
+    reviewers:
+      - 'integritystl/react-devs'
+    groups:
+      major-updates:
+        update-types: ['major']
+      minor-patch-updates:
+        update-types: ['minor', 'patch']
+    allow:
+      - dependency-type: "all"
