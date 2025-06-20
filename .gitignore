@@ -33,3 +33,5 @@ coverage/
 
 # Sensitive configuration
 .cursor/mcp.json
+
+*.tgz
