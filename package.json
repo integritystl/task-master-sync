@@ -1,6 +1,6 @@
 {
   "name": "task-master-sync",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A bidirectional synchronization tool between TaskMaster AI and Monday.com with automatic item recreation",
   "main": "src/index.js",
   "bin": {
